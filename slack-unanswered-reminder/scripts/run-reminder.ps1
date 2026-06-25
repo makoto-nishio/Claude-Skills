@@ -58,7 +58,7 @@ slack-unanswered-reminder skill の主処理を最後まで実行してくださ
 1. 作業ディレクトリの config.yaml を読み込む（list_name / notification_channel / team_members）
 2. SKILL.md の「実行ワークフロー」に従い、list_name から List の File ID を解決し、List(CSV) を読む
 3. 「完了」が未チェック（true 以外）の項目を抽出
-4. 各未完了項の メッセージリンク からスレッドを確認し、team_members（および被メンション者）が誰も返信していない項目を抽出
+4. 各未完了項の メッセージリンク からスレッドを確認し、スレッド返信(replies)内に team_members の誰も返信していない項目を抽出（ボットの親自動投稿に含まれる担当者メンションは「返信済み」と数えない）
 5. 未返信が 1 件以上なら、notification_channel に通知メッセージを送信。0 件なら送信せず exit
 
 絶対禁止事項:
