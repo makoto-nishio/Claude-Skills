@@ -1,0 +1,42 @@
+# slack-unanswered-reminder の設定ファイル
+# キー: ID / 名前（Slack API がこちらを使用）
+# 値（コメント）: 人が読めるラベル（ロジックには影響しない）
+
+# 監視対象の Slack List 名（完全一致で検索する。1 つのみ）
+# 実行時に slack_search_public + type:lists でこの名前から File ID を解決する。
+list_name: "コア機能チームQAリスト"
+
+notification_channel: C015EL8TN7R  # mall_tech_コア機能チーム
+
+# 各要素は User ID または email のどちらでもよい（混在可）。
+# email は実行時に slack_search_users で User ID へ解決する
+#   - profile の email が完全一致するユーザーが 1 件のときだけ採用
+#   - 0 件 / 複数件のときはそのエントリを無視（無人モードのため推測しない）
+# 注: 最終的な返信者判定は必ず User ID で行う（表示名では照合しない）。
+# 括弧内は Slack の表示名（display name）。
+team_members:
+  - U03N96QEZ          # makoto.nishio
+  - U03CB6Z46          # wenqiang.zhang（表示名: bunkyo.tyo）
+  - U03C9BCE7          # kenichi.sawamatsu（表示名: kenichi sawamatsu / 澤松賢一）
+  - U07NQCG2W31        # tetsutaka.kawashita
+  - U08V5KM1S9W        # yoshiyuki.mizoguchi
+
+# Task Scheduler が deploy-task.ps1 から読む実行スケジュール
+# 以下の "daily" または "interval" のどちらか一方だけを有効にする。
+# 使わない方は # でコメントアウト。両方有効だとエラー。
+schedule:
+
+  # --- 方式1: 毎日 / 平日のみ、特定時刻に実行 ---
+  daily:
+    time: "13:00"             # 24時間制 HH:MM
+    weekdays_only: true       # true: 月-金 / false: 毎日
+
+  # --- 方式2: 一定間隔で繰り返し実行 ---
+  # interval は minutes（分）か hours（時間）で指定（minutes 優先。最小 1 分）。
+  # interval:
+  #   minutes: 10             # 例: 10, 30（分単位）。テスト用の短間隔向け
+  #   hours: 1                # 例: 1, 2, 3, 6, 12（minutes と併記時は minutes 優先）
+  #   weekdays_only: true     # オプション: 月-金のみ
+  #   between:                # オプション: 一日のうちの実行時間帯
+  #     start: "09:00"
+  #     end: "18:00"
