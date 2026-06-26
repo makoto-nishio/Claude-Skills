@@ -1,0 +1,74 @@
+# kintone-unfinished-reminder の設定ファイル
+# この config は 2 つの消費者から読まれる:
+#   - Claude（skill 実行時）  : kintone / slack / assignees / trackers / statuses を使う
+#   - deploy-task.ps1（登録時）: schedule セクションだけを使う
+#
+# Kintone の「認証情報」は config に書かない。MCP server (@kintone/mcp-server) が
+# 環境変数から自動で読み込む。対応する認証方式は 2 種類（どちらか一方が揃っていればよい）:
+#   - APIトークン方式 : KINTONE_BASE_URL + KINTONE_API_TOKEN（「問い合わせ管理」app の参照用トークン）
+#   - ID/パスワード方式: KINTONE_USERNAME + KINTONE_PASSWORD（接続先 URL は .mcp.json 等で指定）
+# config には get-records の app 引数として app_id を、
+# チケット URL 組み立て用のベース URL として（任意で）domain を置く。
+# domain 未設定時は環境変数 KINTONE_BASE_URL にフォールバックする。
+
+# Kintone 設定
+kintone:
+  app_id: 18                   # 問い合わせ管理アプリ（get-records の app 引数）
+  # domain: チケット URL 組み立て用のベース URL（末尾スラッシュ無し）。
+  #   未設定なら環境変数 KINTONE_BASE_URL にフォールバックする。
+  #   ID/パスワード認証（.mcp.json 方式）では KINTONE_BASE_URL が OS 環境変数に無い場合があるため、
+  #   ここに明示しておくとどちらの認証方式でも確実に URL を組み立てられる。
+  domain: "https://pmed.cybozu.com"
+
+# Slack 設定
+slack:
+  channel_id: "C015EL8TN7R"    # 投稿先チャンネル（mall_tech_コア機能チーム）
+
+# 担当者（対象とする担当者。各要素は会社 email）
+# email は Kintone 側（担当者 Person フィールド）と Slack 側の共通の主身分。
+#   - Kintone: チケットの担当者照合キーとして使う
+#   - Slack:   実行時に slack_search_users で email → User ID を解決し、メンションに使う
+#             （profile email の完全一致 1 件のみ採用。0 件・複数件は解決失敗として名字テキスト表示にフォールバック）
+# 括弧内は表示用の名字（解決失敗時のフォールバック表示にも使う）。
+assignees:
+  - makoto.nishio@medley.jp        # 西尾
+  - wenqiang.zhang@medley.jp        # 張
+  - tetsutaka.kawashita@medley.jp   # 川下
+  - kenichi.sawamatsu@medley.jp     # 澤松
+  - yoshiyuki.mizoguchi@medley.jp   # 溝口
+
+# トラッカー設定（対象とするトラッカー種別）
+trackers:
+  - 障害
+  - ご質問・調査依頼
+
+# ステータス設定（未対応とみなすステータス）
+statuses:
+  - 新規
+  - 受付済み
+  # - お客様の回答待ち        # 意図的に除外（対象外）
+  - 対応検討中
+  - 対応中
+  - 進行中
+  - 再検討依頼
+
+# Task Scheduler が deploy-task.ps1 から読む実行スケジュール
+# 以下の "daily" または "interval" のどちらか一方だけを有効にする。
+# 使わない方は # でコメントアウト。両方有効だとエラー。
+# 注: このセクションは deploy-task.ps1 専用。skill 実行時（Claude）は参照しない。
+schedule:
+
+  # --- 方式1: 毎日 / 平日のみ、特定時刻に実行 ---
+  daily:
+    time: "09:00"             # 24時間制 HH:MM
+    weekdays_only: true       # true: 月-金 / false: 毎日
+
+  # --- 方式2: 一定間隔で繰り返し実行 ---
+  # interval は minutes（分）か hours（時間）で指定（minutes 優先。最小 1 分）。
+  # interval:
+  #   minutes: 10             # 例: 10, 30（分単位）。テスト用の短間隔向け
+  #   hours: 1                # 例: 1, 2, 3, 6, 12（minutes と併記時は minutes 優先）
+  #   weekdays_only: true     # オプション: 月-金のみ
+  #   between:                # オプション: 一日のうちの実行時間帯
+  #     start: "09:00"
+  #     end: "18:00"
